@@ -171,13 +171,13 @@ public struct PushView<Label, Destination, Tag>: View where Label: View, Destina
     @Binding private var selection: Tag?
 
     public init(destination: Destination, destinationId: String? = nil, tag: Tag, selection: Binding<Tag?>,
-         @ViewBuilder label: () -> Label) {
+                @ViewBuilder label: () -> Label? = { nil }) {
         self.init(destination: destination, destinationId: destinationId, isActive: Binding.constant(false),
                   tag: tag, selection: selection, label: label)
     }
 
     private init(destination: Destination, destinationId: String?, isActive: Binding<Bool>,
-                 tag: Tag?, selection: Binding<Tag?>, @ViewBuilder label: () -> Label) {
+                 tag: Tag?, selection: Binding<Tag?>, @ViewBuilder label: () -> Label?) {
         self.label = label()
         self.destinationId = destinationId
         self._isActive = isActive
@@ -216,7 +216,7 @@ public extension PushView where Tag == Never {
     }
 
     init(destination: Destination, destinationId: String? = nil,
-         isActive: Binding<Bool>, @ViewBuilder label: () -> Label) {
+         isActive: Binding<Bool>, @ViewBuilder label: () -> Label? = { nil }) {
         self.init(destination: destination, destinationId: destinationId, isActive: isActive,
                   tag: nil, selection: Binding.constant(nil), label: label)
     }
@@ -224,19 +224,19 @@ public extension PushView where Tag == Never {
 
 public struct PopView<Label, Tag>: View where Label: View, Tag: Hashable {
     @EnvironmentObject private var navViewModel: NavigationStack
-    private let label: Label
+    private let label: Label?
     private let destination: PopDestination
     private let tag: Tag?
     @Binding private var isActive: Bool
     @Binding private var selection: Tag?
 
-    public init(destination: PopDestination = .previous, tag: Tag, selection: Binding<Tag?>, @ViewBuilder label: () -> Label) {
+    public init(destination: PopDestination = .previous, tag: Tag, selection: Binding<Tag?>, @ViewBuilder label: () -> Label? = { nil }) {
         self.init(destination: destination, isActive: Binding.constant(false),
                   tag: tag, selection: selection, label: label)
     }
 
     private init(destination: PopDestination, isActive: Binding<Bool>, tag: Tag?,
-                 selection: Binding<Tag?>, @ViewBuilder label: () -> Label) {
+                 selection: Binding<Tag?>, @ViewBuilder label: () -> Label?) {
         self.label = label()
         self.destination = destination
         self._isActive = isActive
@@ -273,7 +273,7 @@ public extension PopView where Tag == Never {
                   tag: nil, selection: Binding.constant(nil), label: label)
     }
 
-    init(destination: PopDestination = .previous, isActive: Binding<Bool>, @ViewBuilder label: () -> Label) {
+    init(destination: PopDestination = .previous, isActive: Binding<Bool>, @ViewBuilder label: () -> Label? = { nil }) {
         self.init(destination: destination, isActive: isActive,
                   tag: nil, selection: Binding.constant(nil), label: label)
     }
