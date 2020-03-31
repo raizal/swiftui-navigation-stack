@@ -41,6 +41,10 @@ public class NavigationStack: ObservableObject {
         self.easing = easing
     }
     
+    public convenience init() {
+        self.init(easing: .easeOut(duration: 0.2))
+    }
+    
     private var viewStack = ViewStack() {
         didSet {
             currentView = viewStack.peek()
