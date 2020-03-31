@@ -62,9 +62,10 @@ public class NavigationStack: ObservableObject {
     }
     
     public func replace<Element: View>(_ element: Element, withId identifier: String? = nil) {
+        viewStack.popToPrevious()
         withAnimation(easing) {
             navigationType = .replace
-            viewStack.replace(ViewElement(id: identifier == nil ? UUID().uuidString : identifier!,
+            viewStack.push(ViewElement(id: identifier == nil ? UUID().uuidString : identifier!,
                                        wrappedElement: AnyView(element)))
         }
     }
@@ -111,7 +112,7 @@ public class NavigationStack: ObservableObject {
 
         mutating func replace(_ element: ViewElement) {
             if views.count > 0 {
-                views.popLast()
+                views.removeLast()
             }
             
             views.append(element)
@@ -173,12 +174,12 @@ public struct NavigationStackView<Root>: View where Root: View {
                 if showRoot {
                     rootView
                         .id(rootViewID)
-                        .transition(navigationType == .push ? transitions.push : transitions.pop)
+                        .transition(navigationType == .push || navigationType == .replace ? transitions.push : transitions.pop)
                         .environmentObject(navViewModel)
                 } else {
                     navViewModel.currentView!.wrappedElement
                         .id(navViewModel.currentView!.id)
-                        .transition(navigationType == .push ? transitions.push : transitions.pop)
+                        .transition(navigationType == .push || navigationType == .replace ? transitions.push : transitions.pop)
                         .environmentObject(navViewModel)
                 }
             }
