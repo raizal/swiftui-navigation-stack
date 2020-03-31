@@ -20,6 +20,7 @@ public enum NavigationTransition {
 
 private enum NavigationType {
     case push
+    case replace
     case pop
 }
 
@@ -52,6 +53,14 @@ public class NavigationStack: ObservableObject {
         withAnimation(easing) {
             navigationType = .push
             viewStack.push(ViewElement(id: identifier == nil ? UUID().uuidString : identifier!,
+                                       wrappedElement: AnyView(element)))
+        }
+    }
+    
+    public func replace<Element: View>(_ element: Element, withId identifier: String? = nil) {
+        withAnimation(easing) {
+            navigationType = .replace
+            viewStack.replace(ViewElement(id: identifier == nil ? UUID().uuidString : identifier!,
                                        wrappedElement: AnyView(element)))
         }
     }
@@ -96,6 +105,14 @@ public class NavigationStack: ObservableObject {
             views.removeLast(views.count - (viewIndex + 1))
         }
 
+        mutating func replace(_ element: ViewElement) {
+            if views.count > 0 {
+                views.popLast()
+            }
+            
+            views.append(element)
+        }
+        
         mutating func popToRoot() {
             views.removeAll()
         }
@@ -126,9 +143,9 @@ public struct NavigationStackView<Root>: View where Root: View {
     private let rootView: Root
     private let transitions: (push: AnyTransition, pop: AnyTransition)
 
-    public init(transitionType: NavigationTransition = .default, easing: Animation = .easeOut(duration: 0.2), @ViewBuilder rootView: () -> Root) {
+    public init(navViewModel: NavigationStack?, transitionType: NavigationTransition = .default, easing: Animation = .easeOut(duration: 0.2), @ViewBuilder rootView: () -> Root) {
         self.rootView = rootView()
-        self.navViewModel = NavigationStack(easing: easing)
+        self.navViewModel = navViewModel ?? NavigationStack(easing: easing)
         switch transitionType {
         case .none:
             self.transitions = (.identity, .identity)
@@ -137,6 +154,10 @@ public struct NavigationStackView<Root>: View where Root: View {
         default:
             self.transitions = NavigationTransition.defaultTransitions
         }
+    }
+    
+    public init(transitionType: NavigationTransition = .default, easing: Animation = .easeOut(duration: 0.2), @ViewBuilder rootView: () -> Root) {
+        self.init(navViewModel: NavigationStack(easing: easing), transitionType: transitionType, rootView: rootView)
     }
 
     public var body: some View {
